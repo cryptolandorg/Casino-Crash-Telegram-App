@@ -1,2 +1,0 @@
-TELEGRAM_BUSINESS_CONNECTION_ID=your_business_connection_id
-NEXT_PUBLIC_BOT_USERNAME=your_bot_username 
