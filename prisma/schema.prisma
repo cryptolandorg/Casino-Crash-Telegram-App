@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  telegramId   String   @unique
+  username     String?
+  avatarUrl    String?
+  balance      Float    @default(0)
+  phone        String?  @unique
+  phoneVerified Boolean @default(false)
+  tonWallet    String?
+  blocked      Boolean  @default(false)
+  games        Game[]
+  withdrawals  Withdrawal[]
+  withdrawRequests WithdrawRequest[]
+  deposits     Deposit[]
+  transactions Transaction[]
+  chatMessages ChatMessage[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Game {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  gameSession GameSession @relation(fields: [gameSessionId], references: [id])
+  gameSessionId String
+  bet        Float
+  crashPoint Float?
+  cashout    Float?
+  profit     Float
+  status     String
+  createdAt  DateTime @default(now())
+}
+
+model GameSession {
+  id          String   @id @default(cuid())
+  status      String   @default("waiting") // waiting, starting, playing, crashed
+  crashPoint  Float?
+  startTime   DateTime?
+  crashTime   DateTime?
+  duration    Int?     // в миллисекундах
+  games       Game[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  message   String
+  type      String   @default("text") // text, system, game_result
+  gameSessionId String? // для сообщений связанных с игрой
+  createdAt DateTime @default(now())
+}
+
+model Withdrawal {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  amount     Float
+  method     String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+}
+
+model WithdrawRequest {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  amount     Int      // в звёздах
+  username   String   // никнейм пользователя для перевода
+  status     String   @default("pending") // pending, approved, rejected
+  createdAt  DateTime @default(now())
+  approvedAt DateTime?
+  approvedBy String?  // telegramId админа, который одобрил
+}
+
+model Deposit {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  amount    Float
+  hash      String   @unique
+  from      String
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String   // deposit, withdraw, game, purchase
+  amount    Float
+  currency  String   // XTR, IMBA, TON, USDT
+  payload   String?  // invoice payload или описание
+  status    String   @default("pending") // pending, success, failed
+  createdAt DateTime @default(now())
+}
