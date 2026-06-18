@@ -57,8 +57,8 @@ async function authenticateUser(initData, prisma) {
   console.log('Auth attempt with initData:', initData ? 'present' : 'missing');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   
-  // DEV режим для тестирования
-  if (!initData) {
+  // DEV mode only when explicitly enabled (never in production)
+  if (!initData && process.env.ALLOW_DEV_AUTH === 'true') {
     console.log('[DEV MODE] Skipping Telegram auth, creating test user');
     try {
       const user = await prisma.user.upsert({
@@ -81,6 +81,10 @@ async function authenticateUser(initData, prisma) {
       console.error('Error during DEV authentication:', error);
       throw new Error('DEV Authentication failed');
     }
+  }
+
+  if (!initData) {
+    throw new Error('Authentication failed: missing initData');
   }
   
   // Проверяем с основным и админским токенами
