@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
-import { Redis } from "ioredis";
 import { config, type CrashChance } from "../config.js";
+import { crashChancesKey, lobbyChannel } from "../redis/keys.js";
+import type { RedisClient } from "../redis/client.js";
 import type { CurrentGame, SessionHistoryEntry } from "../types.js";
 
 class SeededRng {
@@ -18,7 +19,7 @@ class SeededRng {
 
 export class GameService {
   private prisma: PrismaClient;
-  private pub: Redis;
+  private pub: RedisClient;
   currentGame: CurrentGame | null = null;
   currentSession: { id: string } | null = null;
   gameTimer: ReturnType<typeof setTimeout> | null = null;
@@ -26,7 +27,7 @@ export class GameService {
   private cachedChances: CrashChance[] | null = null;
   private cachedAt = 0;
 
-  constructor(prisma: PrismaClient, pub: Redis) {
+  constructor(prisma: PrismaClient, pub: RedisClient) {
     this.prisma = prisma;
     this.pub = pub;
   }
@@ -41,7 +42,7 @@ export class GameService {
     }
 
     try {
-      const data = await this.pub.get("crashChances");
+      const data = await this.pub.get(crashChancesKey());
       if (data) {
         const parsed = (JSON.parse(data) as CrashChance[]).filter(
           (c) => Array.isArray(c.range) && c.range.length === 2
@@ -143,7 +144,7 @@ export class GameService {
       );
 
       this.pub.publish(
-        config.LOBBY_CHANNEL,
+        lobbyChannel(),
         JSON.stringify({
           type: "game-start",
           phase: "betting",
@@ -184,7 +185,7 @@ export class GameService {
         this.currentGame.startTime = Date.now();
 
         this.pub.publish(
-          config.LOBBY_CHANNEL,
+          lobbyChannel(),
           JSON.stringify({
             type: "game-flying",
             phase: "flying",
@@ -275,7 +276,7 @@ export class GameService {
       }
 
       this.pub.publish(
-        config.LOBBY_CHANNEL,
+        lobbyChannel(),
         JSON.stringify({
           type: "game-crash",
           phase: "crashed",

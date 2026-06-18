@@ -7,7 +7,7 @@ TypeScript WebSocket server for a fair crash game (Aviator-style) with Telegram 
 - Server-authoritative game loop (betting → flying → crash)
 - Telegram Web App `initData` validation
 - Prisma + PostgreSQL for users, bets, sessions, chat
-- Redis pub/sub for real-time lobby and chat events
+- Redis pub/sub for real-time lobby and chat events (via [ioredis-xyz](https://www.npmjs.com/package/ioredis-xyz))
 - Configurable crash-point distribution via Redis key `crashChances`
 
 ## Project layout
@@ -20,6 +20,7 @@ src/
   controllers/           # WebSocket message handlers
   services/              # game engine
   utils/                 # Telegram auth helpers
+  redis/                 # ioredis-xyz client, keys, memory fallback
 prisma/                  # schema and migrations
 ```
 
@@ -46,7 +47,8 @@ npm run build && npm start
 | `DATABASE_URL` | PostgreSQL connection string |
 | `BOT_TOKEN` | Telegram bot token for initData validation |
 | `ADMIN_BOT_TOKEN` | Optional second bot token |
-| `REDIS_URL` | Redis URL (`redis://localhost:6379`) |
+| `REDIS_URL` | Redis URL (`redis://localhost:6379`) or `memory://` for in-memory |
+| `REDIS_MEMORY` | Set `true` to use in-memory Redis fallback |
 | `WS_PORT` | WebSocket port (default `4001`) |
 | `ALLOW_DEV_AUTH` | Set `true` only for local testing without Telegram |
 

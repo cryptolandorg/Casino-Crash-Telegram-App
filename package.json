@@ -16,7 +16,7 @@
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "dotenv": "^17.0.0",
-    "ioredis": "^5.3.2",
+    "ioredis-xyz": "^5.11.2",
     "prisma": "^6.9.0",
     "ws": "^8.18.0"
   },

@@ -1,16 +1,16 @@
 import type { PrismaClient } from "@prisma/client";
-import { Redis } from "ioredis";
-import { config } from "../config.js";
+import { chatChannel, lobbyChannel } from "../redis/keys.js";
+import type { RedisClient } from "../redis/client.js";
 import type { GameService } from "../services/gameService.js";
 import type { AuthenticatedWebSocket, WsMessage } from "../types.js";
 import { authenticateUser } from "../utils/telegram.js";
 
 export class WebSocketController {
   private prisma: PrismaClient;
-  private pub: Redis;
+  private pub: RedisClient;
   private gameService: GameService;
 
-  constructor(prisma: PrismaClient, pub: Redis, gameService: GameService) {
+  constructor(prisma: PrismaClient, pub: RedisClient, gameService: GameService) {
     this.prisma = prisma;
     this.pub = pub;
     this.gameService = gameService;
@@ -72,7 +72,7 @@ export class WebSocketController {
       };
 
       this.pub.publish(
-        config.CHAT_CHANNEL,
+        chatChannel(),
         JSON.stringify({ type: "chat-message", ...chatMsg })
       );
     } catch (error) {
@@ -152,7 +152,7 @@ export class WebSocketController {
       if (added) {
         const userBets = currentGame.bets.get(ws.user.id)!;
         this.pub.publish(
-          config.LOBBY_CHANNEL,
+          lobbyChannel(),
           JSON.stringify({
             type: "bet",
             userId: ws.user.id,
@@ -267,7 +267,7 @@ export class WebSocketController {
       );
 
       this.pub.publish(
-        config.LOBBY_CHANNEL,
+        lobbyChannel(),
         JSON.stringify({
           type: "cashout",
           userId: ws.user.id,
