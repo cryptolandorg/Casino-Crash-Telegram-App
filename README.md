@@ -1,5 +1,7 @@
 # Telegram Crash Game — WebSocket Server
 
+<img place="center" width="240" height="416" alt="0824" src="https://github.com/user-attachments/assets/26fde9e0-3f62-44b6-9ca1-0e092f6c6cf2" />
+
 TypeScript WebSocket server for a fair crash game (Aviator-style) with Telegram auth, PostgreSQL persistence, and Redis pub/sub.
 
 ## Features
@@ -7,7 +9,6 @@ TypeScript WebSocket server for a fair crash game (Aviator-style) with Telegram 
 - Server-authoritative game loop (betting → flying → crash)
 - Telegram Web App `initData` validation
 - Prisma + PostgreSQL for users, bets, sessions, chat
-- Redis pub/sub for real-time lobby and chat events (via [ioredis-xyz](https://www.npmjs.com/package/ioredis-xyz))
 - Configurable crash-point distribution via Redis key `crashChances`
 
 ## Project layout
