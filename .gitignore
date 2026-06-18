@@ -19,3 +19,5 @@ yarn-error.log*
 
 # prisma
 /lib/generated/prisma
+
+package-lock.json
